@@ -3,6 +3,7 @@ package sample;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -168,7 +169,7 @@ public class login extends Application {
         //创建VBox(左选择方式列表)
         VBox vBox_left = new VBox();
         vBox_left.setPadding(new Insets(10));   //内边距
-        vBox_left.setSpacing(5);            //节点边距
+        vBox_left.setSpacing(10);            //节点边距
         Button btn_Write = new Button("写信息");//创建三个按钮
         Button btn_Receive = new Button("收件箱");
         Button btn_Draft = new Button("草稿");
@@ -178,7 +179,7 @@ public class login extends Application {
         btn_Draft.setMaxWidth(Double.MAX_VALUE);
         vBox_left.getChildren().addAll(btn_Write, btn_Receive, btn_Draft, btn_Delete);
 
-        //应用布局
+        //应用border的左上布局
         border_Main.setTop(vBox_top);        //布局top部分显示菜单栏
         border_Main.setLeft(vBox_left);     //布局left部分显示操作
 
@@ -207,8 +208,8 @@ public class login extends Application {
         Separator separator_vertical2 = new Separator();        //与右侧区域的纵向分割线
         separator_vertical2.setOrientation(Orientation.VERTICAL);
 
-        //GridPane
-        GridPane grid_CenterWrite = new GridPane();
+        //GridPane(Write)
+        GridPane grid_CenterWrite = new GridPane();              //写部分的布局
         grid_CenterWrite.setAlignment(Pos.TOP_CENTER);
         grid_CenterWrite.setHgap(10);
         grid_CenterWrite.setVgap(10);
@@ -229,7 +230,7 @@ public class login extends Application {
 
 
         //创建(CENTER部分“写”中右侧的功能区)
-        //访问数据库获取收信人列表
+        //访问数据库获取收信人列表，从所有用户中排除登入的用户，剩下的就是联系人
         db.connect();
         rs = null;
         String sql1 = "select NBXW_USER from user_pswd;";
@@ -248,8 +249,8 @@ public class login extends Application {
         String[] string_Receivers = new String[length_receivers];
         int i=0;
         int j;
-        try{
-            while(rs.next()){
+        try{                                                                        //从所有用户中排除CurrentUser(登入的用户)，剩下的就是联系人
+            while(rs.next()){                                                       //i,j计数器
                 string_Receivers[i] = rs.getString("NBXW_USER");
                 i++;
             }
@@ -263,7 +264,7 @@ public class login extends Application {
 
         //设置布局
         //从内到外格式：checkBoxes_receivers -> vBox_RightInner -> scrollPane_RightInner -> vBox_Right
-        CheckBox[] checkBoxes_receivers = new CheckBox[string_Receivers.length-1];      //复选框
+        CheckBox[] checkBoxes_receivers = new CheckBox[string_Receivers.length-1];      //新建联系人复选框
         Text text_SelectRecipients = new Text(" 发送到:");
         ScrollPane scrollPane_RightInner = new ScrollPane();
         scrollPane_RightInner.setPrefSize(100,225);
@@ -296,7 +297,7 @@ public class login extends Application {
         }
         db.disconnect();
 
-        //生成(user-1)个数个复选框，并添加监听器
+        //生成(user-1)个数个复选框，并添加监听器           监听结果记入StringBuffer中
         StringBuffer stringBuffer_SelectedRecipients = new StringBuffer();        //记录被选中的人
         for(i=0,j=0;i<string_Receivers.length;i++,j++) {
             if(!string_Receivers[i].contentEquals(currentUser)){
@@ -305,7 +306,7 @@ public class login extends Application {
                 System.out.println(i);
                 checkBoxes_receivers[j] = new CheckBox(string_Receivers[i]);
                 CheckBox cb = checkBoxes_receivers[j];
-                //为复选框的每一个选项添加监听
+                //为复选框的每一个联系人选项添加监听
                 checkBoxes_receivers[j].selectedProperty().addListener((observable, oldValue, newValue) -> {
                     if(cb.isSelected()){
                         stringBuffer_SelectedRecipients.append(cb.getText());
@@ -326,10 +327,10 @@ public class login extends Application {
             }
         }
 
-        scrollPane_RightInner.setContent(vBox_RightInner);
+        scrollPane_RightInner.setContent(vBox_RightInner);                  //多个联系人的滚动条
         VBox vBox_Right = new VBox();
         vBox_Right.setPadding(new Insets(10, 20, 0, 0));
-        vBox_Right.getChildren().addAll(text_SelectRecipients,scrollPane_RightInner,hBox_twoBtn);
+        vBox_Right.getChildren().addAll(text_SelectRecipients,scrollPane_RightInner,hBox_twoBtn);     //右边的VBox里加入联系人
 
 
         //内容详情
@@ -344,7 +345,7 @@ public class login extends Application {
         Separator separator_horizontal4 = new Separator();              //分割线横
         Button btn_SaveRemark = new Button("保存");                 //保存回复按钮
 
-        Text text_DetailID = new Text("ID：");
+        Text text_DetailID = new Text("ID：");                          //一堆文本
         text_DetailID.setTextAlignment(TextAlignment.RIGHT);
         Text text_DetailAuthor = new Text("作者：");
         text_DetailAuthor.setTextAlignment(TextAlignment.RIGHT);
@@ -356,7 +357,7 @@ public class login extends Application {
         text_DetailRemark.setTextAlignment(TextAlignment.RIGHT);
 
 
-        TextField textField_DetailID = new TextField();
+        TextField textField_DetailID = new TextField();                 //文本的大小控制，我想要支持JavaFX可视化的UI设计插件
         textField_DetailID.setPrefWidth(300);
         TextField textField_DetailAuthor = new TextField();
         textField_DetailAuthor.setPrefWidth(150);
@@ -369,7 +370,7 @@ public class login extends Application {
         textArea_DetailRemark.setPrefHeight(160);
         textArea_DetailRemark.setWrapText(true);
 
-        GridPane gridPane_Detail = new GridPane();
+        GridPane gridPane_Detail = new GridPane();              //设计布局，将UI控件加入到gridpane中
         gridPane_Detail.setVgap(10);
         gridPane_Detail.setHgap(10);
         gridPane_Detail.setPadding(new Insets(10,10,10,10));
@@ -386,7 +387,7 @@ public class login extends Application {
         gridPane_Detail.add(text_DetailContext,1,4);
         gridPane_Detail.add(textField_DetailContext,2,4,3,1);
         gridPane_Detail.add(text_DetailRemark,1,5);
-        gridPane_Detail.add(textArea_DetailRemark,2,5,3,1);//TODO delete button 调整布局，返回放在左下角
+        gridPane_Detail.add(textArea_DetailRemark,2,5,3,1);
         gridPane_Detail.add(separator_vertical6,5,0,1,6);
         gridPane_Detail.add(btn_SaveRemark,6,5,1,1);
 
@@ -394,7 +395,7 @@ public class login extends Application {
 
 
         //收
-        Separator separator_vertical4 = new Separator();
+        Separator separator_vertical4 = new Separator();                //创建布局、分割线、文本显示等
         separator_vertical4.setOrientation(Orientation.VERTICAL);
         Text text_ReceiveSelectQueryField = new Text("查询：");
         ObservableList<String> options_Receive =
@@ -409,14 +410,14 @@ public class login extends Application {
             stringBuffer_ReceiveSelectQueryField.append(comboBox_ReceiveSelectQueryField.getSelectionModel().getSelectedItem().toString());
         });
 
-        comboBox_ReceiveSelectQueryField.setPromptText("选择查询字段");
+        comboBox_ReceiveSelectQueryField.setPromptText("选择查询字段");       //建立查询选择框、查询文本等
         Text text_ReceiveEqual = new Text("=");
-        TextField textField_ReceiveSelectQueryField1 = new TextField();
+        TextField textField_ReceiveSelectQueryField = new TextField();
         Button btn_ReceiveQuery = new Button("查询");
         Button btn_ReceiveQueryAll = new Button("查询所有");
         Separator separator_horizontal3 = new Separator();
 
-        TableView<Data> tableView_ReceiveData = new TableView<>();
+        TableView<Data> tableView_ReceiveData = new TableView<>();           //新建一个表格、多个表格列
         tableView_ReceiveData.setPlaceholder(new Text("无内容"));
         tableView_ReceiveData.setEditable(true);
 
@@ -490,7 +491,7 @@ public class login extends Application {
 
         tableColumn_ReceiveGoToEdit.setCellFactory(cellFactory_Receive);
 
-        TableColumn tableColumn_DeleteRow = new TableColumn("删除");
+        TableColumn tableColumn_ReceiveDeleteRow = new TableColumn("删除");
         //删除按钮动作列
         Callback<TableColumn<Data, String>, TableCell<Data, String>> cellFactory_Delete
                 =
@@ -507,8 +508,15 @@ public class login extends Application {
                                     setText(null);
                                 } else {
                                     btn.setOnAction(event -> {
-                                        //将flag设置为
-
+                                        Data data = getTableView().getItems().get(getIndex());     //获取本列数据
+                                        //将flag设置为2 标志为删除
+                                        db.connect();
+                                        String sql = "UPDATE xwcl SET XW_FLAG = 2" +
+                                                " WHERE XW_ID = " + data.getID() + ";";
+                                        db.updateDatabases(sql);
+                                        BuildAlert(Alert.AlertType.INFORMATION,"删除成功",null,
+                                                "已删除!");
+                                        db.disconnect();
                                     });
                                     setGraphic(btn);
                                     setText(null);
@@ -518,12 +526,13 @@ public class login extends Application {
                         return cell;
                     }
                 };
-        tableColumn_ReceiveGoToEdit.setCellFactory(cellFactory_Delete);
+        tableColumn_ReceiveDeleteRow.setCellFactory(cellFactory_Delete);
 
 
-        tableView_ReceiveData.getColumns().addAll(tableColumn_Receive_xwID,tableColumn_Receive_xwName,
-                tableColumn_Receive_xwAuthor,tableColumn_Receive_xwContext,tableColumn_Receive_xwDate,tableColumn_ReceiveGoToEdit);
-        VBox vBox_ReceiveTable = new VBox();
+        tableView_ReceiveData.getColumns().addAll(tableColumn_Receive_xwID,tableColumn_Receive_xwName,  //将上述列加入表格
+                tableColumn_Receive_xwAuthor,tableColumn_Receive_xwContext,tableColumn_Receive_xwDate,
+                tableColumn_ReceiveGoToEdit,tableColumn_ReceiveDeleteRow);
+        VBox vBox_ReceiveTable = new VBox();    //将表格加入VBox
         vBox_ReceiveTable.setPadding(new Insets(10, 5, 10, 13));
         vBox_ReceiveTable.getChildren().addAll(tableView_ReceiveData);
 
@@ -538,7 +547,7 @@ public class login extends Application {
         grid_CenterReceive.add(text_ReceiveSelectQueryField,1,0);
         grid_CenterReceive.add(comboBox_ReceiveSelectQueryField,2,0);
         grid_CenterReceive.add(text_ReceiveEqual,3,0);
-        grid_CenterReceive.add(textField_ReceiveSelectQueryField1,4,0);
+        grid_CenterReceive.add(textField_ReceiveSelectQueryField,4,0);
         grid_CenterReceive.add(btn_ReceiveQuery,5,0);
         grid_CenterReceive.add(btn_ReceiveQueryAll,6,0);
         grid_CenterReceive.add(separator_horizontal3,1,1,6,1);
@@ -569,7 +578,7 @@ public class login extends Application {
         Button btn_DraftQueryAll = new Button("查询所有");
         Separator separator_horizontal2 = new Separator();
 
-        TableView<Data> tableView_DraftData = new TableView<>();            //表格
+        TableView<Data> tableView_DraftData = new TableView<>();            //表格TableView的创建
         tableView_DraftData.setPlaceholder(new Text("无内容"));
         tableView_DraftData.setEditable(true);
 
@@ -583,14 +592,14 @@ public class login extends Application {
         tableColumn_Draft_xwName.setMinWidth(80);
         tableColumn_Draft_xwName.setCellValueFactory(new PropertyValueFactory<>("name"));
         tableColumn_Draft_xwName.setCellFactory(TextFieldTableCell.<Data>forTableColumn());
-        tableColumn_Draft_xwName.setOnEditCommit(               //修改列值同步到数据库
+        tableColumn_Draft_xwName.setOnEditCommit(               //直接在TextField中编辑并修改name
                 (TableColumn.CellEditEvent<Data, String> t) -> {
                     ((Data) t.getTableView().getItems().get(
                             t.getTablePosition().getRow())
                     ).setID(t.getNewValue());
                     //更新数据库
                     Data temp = t.getRowValue();
-                    String sql_updateName = " UPDATE xw SET XW_NAME=\""+t.getNewValue()+
+                    String sql_updateName = " UPDATE xwcl SET XW_NAME=\""+t.getNewValue()+
                             "\" WHERE XW_NAME=\""+temp.getName()+"\";";
                     db.connect();
                     try {
@@ -617,14 +626,14 @@ public class login extends Application {
         tableColumn_Draft_xwContext.setMinWidth(120);
         tableColumn_Draft_xwContext.setCellValueFactory(new PropertyValueFactory<>("context"));
         tableColumn_Draft_xwContext.setCellFactory(TextFieldTableCell.<Data>forTableColumn());
-        tableColumn_Draft_xwContext.setOnEditCommit(
+        tableColumn_Draft_xwContext.setOnEditCommit(            //直接在TextField中编辑并修改正文
                 (TableColumn.CellEditEvent<Data, String> t) -> {
                     ((Data) t.getTableView().getItems().get(
                             t.getTablePosition().getRow())
                     ).setID(t.getNewValue());
                     //更新数据库
                     Data temp = t.getRowValue();
-                    String sql_updateContext = " UPDATE xw SET XW_CONTEXT=\""+t.getNewValue()+
+                    String sql_updateContext = " UPDATE xwcl SET XW_CONTEXT=\""+t.getNewValue()+
                             "\" WHERE XW_CONTEXT=\""+temp.getContext()+"\";";
                     db.connect();
                     try {
@@ -644,14 +653,14 @@ public class login extends Application {
         tableColumn_Draft_xwDate.setMinWidth(130);
         tableColumn_Draft_xwDate.setCellValueFactory(new PropertyValueFactory<>("date"));
         tableColumn_Draft_xwDate.setCellFactory(TextFieldTableCell.<Data>forTableColumn());
-        tableColumn_Draft_xwDate.setOnEditCommit(
+        tableColumn_Draft_xwDate.setOnEditCommit(   //直接在TextField中编辑并修改日期
                 (TableColumn.CellEditEvent<Data, String> t) -> {
                     ((Data) t.getTableView().getItems().get(
                             t.getTablePosition().getRow())
                     ).setID(t.getNewValue());
                     //更新数据库
                     Data temp = t.getRowValue();
-                    String sql_updateDate = " UPDATE xw SET XW_DATE=\""+t.getNewValue()+
+                    String sql_updateDate = " UPDATE xwcl SET XW_DATE=\""+t.getNewValue()+
                             "\" WHERE XW_DATE=\""+temp.getDate()+"\";";
                     db.connect();
                     try {
@@ -686,20 +695,17 @@ public class login extends Application {
                                 } else {
                                     btn.setOnAction(event -> {
                                         Data data = getTableView().getItems().get(getIndex());     //获取本列数据
-
                                         //切换顶部标签
                                         label_Top.setText("modify and send the message.");
                                         //切换场景
                                         border_Main.setCenter(grid_CenterWrite);
                                         border_Main.setRight(vBox_Right);
-
+                                        //设置文本值
                                         textField_xwNumber.setText(currentUser.toString() + GetTime());
                                         textField_xwAuthor.setText(data.getAuthor());
                                         textField_xwTitle.setText(data.getName());
                                         datePicker_xwDate.setValue(LocalDate.now());
                                         textArea_xwMain.setText(data.getContext());
-                                        System.out.println(datePicker_xwDate.getEditor().getText());//获取时间
-
                                     });
                                     setGraphic(btn);
                                     setText(null);
@@ -709,11 +715,48 @@ public class login extends Application {
                         return cell;
                     }
                 };
-
         tableColumn_DraftGoToEdit.setCellFactory(cellFactory_Draft);
 
+        TableColumn tableColumn_DraftDeleteRow = new TableColumn("删除");
+        //删除按钮动作列
+        Callback<TableColumn<Data, String>, TableCell<Data, String>> cellFactory_DraftDelete
+                =
+                new Callback<>() {
+                    @Override
+                    public TableCell call(final TableColumn<Data, String> param) {
+                        final TableCell<Data, String> cell = new TableCell<Data, String>() {
+                            final Button btn = new Button("删除");
+                            @Override
+                            public void updateItem(String item, boolean empty) {
+                                super.updateItem(item, empty);
+                                if (empty) {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else {
+                                    btn.setOnAction(event -> {
+                                        Data data = getTableView().getItems().get(getIndex());     //获取本列数据
+                                        //将flag设置为2 标志为删除
+                                        db.connect();
+                                        String sql = "UPDATE xwcl SET XW_FLAG = 2" +
+                                                " WHERE XW_ID = " + data.getID() + ";";
+                                        db.updateDatabases(sql);
+                                        BuildAlert(Alert.AlertType.INFORMATION,"删除成功",null,
+                                                "删除成功!");
+                                        db.disconnect();
+                                    });
+                                    setGraphic(btn);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        return cell;
+                    }
+                };
+        tableColumn_DraftDeleteRow.setCellFactory(cellFactory_DraftDelete);
+
         tableView_DraftData.getColumns().addAll(tableColumn_Draft_xwID,tableColumn_Draft_xwName,
-                tableColumn_Draft_xwAuthor,tableColumn_Draft_xwContext,tableColumn_Draft_xwDate,tableColumn_DraftGoToEdit);
+                tableColumn_Draft_xwAuthor,tableColumn_Draft_xwContext,tableColumn_Draft_xwDate,
+                tableColumn_DraftGoToEdit,tableColumn_DraftDeleteRow);
         VBox vBox_DraftTable = new VBox();
         vBox_DraftTable.setPadding(new Insets(10, 5, 10, 13));
         vBox_DraftTable.getChildren().addAll(tableView_DraftData);
@@ -735,6 +778,120 @@ public class login extends Application {
         grid_CenterDraft.add(separator_horizontal2,1,1,6,1);
         grid_CenterDraft.add(vBox_DraftTable,0,2,7,1);
 
+
+
+        //删
+        Separator separator_vertical7 = new Separator();
+        separator_vertical7.setOrientation(Orientation.VERTICAL);
+        Text text_DeleteSelectQueryField = new Text("查询：");
+        ObservableList<String> options_Delete =
+                FXCollections.observableArrayList("编号","标题","作者","正文","日期");
+        final ComboBox comboBox_DeleteSelectQueryField = new ComboBox(options_Delete);
+        comboBox_DeleteSelectQueryField.setVisibleRowCount(4);
+        comboBox_DeleteSelectQueryField.setEditable(true);
+        comboBox_DeleteSelectQueryField.setPrefWidth(110);
+        StringBuffer stringBuffer_DeleteSelectQueryField = new StringBuffer();
+        comboBox_DeleteSelectQueryField.setOnAction((Event ev) ->{
+            stringBuffer_DeleteSelectQueryField.setLength(0);
+            stringBuffer_DeleteSelectQueryField.append(comboBox_DeleteSelectQueryField.getSelectionModel().getSelectedItem().toString());
+        });
+
+        comboBox_DeleteSelectQueryField.setPromptText("选择查询字段");
+        Text text_DeleteEqual = new Text("=");
+        TextField textField_DeleteSelectQueryField = new TextField();
+        Button btn_DeleteQuery = new Button("查询");
+        Button btn_DeleteQueryAll = new Button("查询所有");
+        Separator separator_horizontal5 = new Separator();
+
+        TableView<Data> tableView_DeleteData = new TableView<>();
+        tableView_DeleteData.setPlaceholder(new Text("无内容"));
+        tableView_DeleteData.setEditable(true);
+        TableColumn<Data,String> tableColumn_Delete_xwID = new TableColumn<>("ID");
+        tableColumn_Delete_xwID.setMinWidth(23);
+        tableColumn_Delete_xwID.setMaxWidth(23);
+        tableColumn_Delete_xwID.setCellValueFactory(new PropertyValueFactory<>("ID"));
+
+        TableColumn<Data,String> tableColumn_Delete_xwName = new TableColumn<>("标题");
+        tableColumn_Delete_xwName.setMinWidth(80);
+        tableColumn_Delete_xwName.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<Data,String> tableColumn_Delete_xwAuthor = new TableColumn<>("作者");
+        tableColumn_Delete_xwAuthor.setMinWidth(50);
+        tableColumn_Delete_xwAuthor.setMaxWidth(100);
+        tableColumn_Delete_xwAuthor.setPrefWidth(50);
+        tableColumn_Delete_xwAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
+
+        TableColumn<Data,String> tableColumn_Delete_xwContext = new TableColumn<>("正文");
+        tableColumn_Delete_xwContext.setMinWidth(120);
+        tableColumn_Delete_xwContext.setCellValueFactory(new PropertyValueFactory<>("context"));
+
+        TableColumn<Data,String> tableColumn_Delete_xwDate = new TableColumn<>("日期");
+        tableColumn_Delete_xwDate.setMinWidth(130);
+        tableColumn_Delete_xwDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+
+        TableColumn tableColumn_DeleteRecovery = new TableColumn<>("还原");
+        tableColumn_DeleteRecovery.setCellValueFactory(new PropertyValueFactory<>(""));
+        //还原按钮动作列
+        Callback<TableColumn<Data, String>, TableCell<Data, String>> cellFactory_Recovery
+                =
+                new Callback<>() {
+                    @Override
+                    public TableCell call(final TableColumn<Data, String> param) {
+                        final TableCell<Data, String> cell = new TableCell<Data, String>() {
+                            final Button btn = new Button("还原");
+                            @Override
+                            public void updateItem(String item, boolean empty) {
+                                super.updateItem(item, empty);
+                                if (empty) {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else {
+                                    btn.setOnAction(event -> {
+                                        Data data = getTableView().getItems().get(getIndex());     //获取本列数据
+                                        //将flag设置为1 标志为还原
+                                        db.connect();
+                                        String sql = "UPDATE xwcl SET XW_FLAG = 1" +
+                                                " WHERE XW_ID = " + data.getID() + ";";
+                                        db.updateDatabases(sql);
+                                        BuildAlert(Alert.AlertType.INFORMATION,"还原成功",null,
+                                                "已还原!");
+                                        db.disconnect();
+                                    });
+                                    setGraphic(btn);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        return cell;
+                    }
+                };
+
+        tableColumn_DeleteRecovery.setCellFactory(cellFactory_Recovery);
+
+
+        tableView_DeleteData.getColumns().addAll(tableColumn_Delete_xwID,tableColumn_Delete_xwName,
+                tableColumn_Delete_xwAuthor,tableColumn_Delete_xwContext,tableColumn_Delete_xwDate,
+                tableColumn_DeleteRecovery);
+
+        VBox vBox_DeleteTable = new VBox();
+        vBox_DeleteTable.setPadding(new Insets(10,5,10,13));
+        vBox_DeleteTable.getChildren().addAll(tableView_DeleteData);
+
+        //创建Delete的CENTER部分
+        GridPane grid_CenterDelete = new GridPane();
+        grid_CenterDelete.setAlignment(Pos.TOP_CENTER);
+        grid_CenterDelete.setHgap(10);
+        grid_CenterDelete.setVgap(10);
+        grid_CenterDelete.setPadding(new Insets(10, 10, 10, 10));
+        grid_CenterDelete.add(separator_vertical3,0,0,1,3);
+        grid_CenterDelete.add(text_DeleteSelectQueryField,1,0);
+        grid_CenterDelete.add(comboBox_DeleteSelectQueryField,2,0);
+        grid_CenterDelete.add(text_DeleteEqual,3,0);
+        grid_CenterDelete.add(textField_DeleteSelectQueryField,4,0);
+        grid_CenterDelete.add(btn_DeleteQuery,5,0);
+        grid_CenterDelete.add(btn_DeleteQueryAll,6,0);
+        grid_CenterDelete.add(separator_horizontal2,1,1,6,1);
+        grid_CenterDelete.add(vBox_DeleteTable,0,2,7,1);
 
 
         //按钮btn_SaveRemark的动作
@@ -766,6 +923,8 @@ public class login extends Application {
             border_Main.setRight(null);
         });
 
+
+
         //按钮btn_Return的动作
         btn_Return.setOnAction(event -> {
             //切换顶部标签
@@ -775,30 +934,63 @@ public class login extends Application {
             border_Main.setRight(null);
         });
 
+        //按钮btn_Save的动作
+        btn_Save.setOnAction(event -> {
+            db.connect();
+
+            //xw废了，只向xwcl中插入未发送(另存为)的数据
+//            //向表xw中插入数据
+//            String sql2 = "insert into xw values(";
+//            sql2 = sql2 + GetSpareId("xw") + ",'";  //用方法GetSpareId查询自动变化的灵性ID
+//            sql2 = sql2 + textField_xwTitle.getText() + "','";
+//            sql2 = sql2 + textField_xwAuthor.getText() + "','";
+//            sql2 = sql2 + textArea_xwMain.getText() + "','";
+//            sql2 = sql2 + GetTime() + "',";
+//            sql2 = sql2 + 0 + ");";     //另存为的flag为0
+//            try {
+//                if(db.updateDatabases(sql2)<1){
+//                    System.out.println("出错了，详情见提示框");
+//                }
+//                else{
+//                    System.out.println("已保存！");
+//                    BuildAlert(Alert.AlertType.INFORMATION,"保存成功",null,"已保存！");
+//                }
+//            }
+//            catch (Exception e){
+//                e.printStackTrace();
+//            }
+//            db.disconnect();
+//        });
+
+            //向表xwcl中插入数据
+            //TODO 当要发送草稿时删一出多
+            String sql_xwcl = "insert into xwcl values(";
+            sql_xwcl = sql_xwcl + GetSpareId("xwcl") + ",'";
+            sql_xwcl = sql_xwcl + textField_xwTitle.getText() + "','";
+            sql_xwcl = sql_xwcl + textField_xwAuthor.getText() + "','";
+            sql_xwcl = sql_xwcl + "" + "','";
+            sql_xwcl = sql_xwcl + textArea_xwMain.getText() + "','";
+            sql_xwcl = sql_xwcl + GetTime() + "','',";         //XW_REMARK意见暂时为空
+            sql_xwcl = sql_xwcl + 0 + ",";                     //XW_FLAG发送成功为1
+            sql_xwcl = sql_xwcl + 0 + ");";                    //XW_READED默认为0，未读
+            System.out.println(sql_xwcl);
+            try {
+                if (db.updateDatabases(sql_xwcl) < 1) {
+                    System.out.println("出错了，详情见提示框");
+                } else {
+                    System.out.println("已保存！");
+                    BuildAlert(Alert.AlertType.INFORMATION, "保存成功", null, "已保存！");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            db.disconnect();
+        });
+
         //按钮btn_ReceiveQuery的动作
         btn_ReceiveQuery.setOnAction(event ->{
-
-            String condition;
-            switch (stringBuffer_ReceiveSelectQueryField.toString()){
-                case "编号":{
-                    condition = "XW_ID";break;
-                }
-                case "标题":{
-                    condition = "XW_NAME";break;
-                }
-                case "作者":{
-                    condition = "XW_AUTHOR";break;
-                }
-                case "正文":{
-                    condition = "XW_CONTEXT";break;
-                }
-                case "日期":{
-                    condition = "XW_DATE";break;
-                }
-                default:{
-                    condition = "";break;
-                }
-            }
+            String condition = getString(stringBuffer_ReceiveSelectQueryField);
             if(condition.contentEquals("")){
                 BuildAlert(Alert.AlertType.ERROR,"错误",null,"请选择查询条件");
             }
@@ -809,19 +1001,17 @@ public class login extends Application {
                 String sql23;
                 if(condition.contentEquals("XW_ID")){
                     sql23 = "select * from xwcl\n" + "WHERE " + condition + " = " +
-                            textField_ReceiveSelectQueryField1.getText() +" AND XW_RECEIVER = \'" +
-                            currentUser + "\';";
+                            textField_ReceiveSelectQueryField.getText() +" AND XW_RECEIVER = \'" +
+                            currentUser + "\' AND XW_FLAG = 1;";//查询条件XW_FLAG = 1呢？只要有receiver就好了，但是草稿中的不行
                 }
                 else {
                     sql23 = "select * from xwcl\n" + "WHERE " + condition + " = \'" +
-                            textField_ReceiveSelectQueryField1.getText() +"\' AND XW_RECEIVER = \'" +
-                            currentUser + "\';";
+                            textField_ReceiveSelectQueryField.getText() +"\' AND XW_RECEIVER = \'" +
+                            currentUser + "\' AND XW_FLAG = 1;";
                 }
                 rs = db.queryDatabase(sql23);
-
                 //根据查询结果建立表格
                 BuildTable(tableView_ReceiveData,rs);
-
                 db.disconnect();
             }
         });
@@ -831,46 +1021,17 @@ public class login extends Application {
             db.connect();
             rs = null;
             //查询所有
-            String sql3 = "select * from xwcl WHERE XW_RECEIVER = \'" + currentUser +"\';";
+            String sql3 = "select * from xwcl WHERE XW_RECEIVER = \'" + currentUser +"\' AND XW_FLAG = 1;";
             rs = db.queryDatabase(sql3);
             //根据查询结果建立表格
             BuildTable(tableView_ReceiveData,rs);
             db.disconnect();
         });
 
-        //按钮btn_Draft的动作
-        btn_Draft.setOnAction(event -> {
-            //切换顶部标签
-            label_Top.setText("Drafts.");
-            //切换场景
-            border_Main.setRight(null);
-            border_Main.setCenter(grid_CenterDraft);
-        });
-
         //按钮btn_DraftQuery的动作
         btn_DraftQuery.setOnAction(event -> {
 
-            String condition;
-            switch (stringBuffer_DraftSelectQueryField.toString()){
-                case "编号":{
-                    condition = "XW_ID";break;
-                }
-                case "标题":{
-                    condition = "XW_NAME";break;
-                }
-                case "作者":{
-                    condition = "XW_AUTHOR";break;
-                }
-                case "正文":{
-                    condition = "XW_CONTEXT";break;
-                }
-                case "日期":{
-                    condition = "XW_DATE";break;
-                }
-                default:{
-                    condition = "";
-                }
-            }
+            String condition = getString(stringBuffer_DraftSelectQueryField);
 
             if(condition.contentEquals("")){
                 BuildAlert(Alert.AlertType.ERROR,"错误",null,"请选择查询条件");
@@ -881,12 +1042,12 @@ public class login extends Application {
                 //条件查询
                 String sql23;
                 if(condition.contentEquals("XW_ID")){
-                    sql23 = "select * from xw\n" + "WHERE " + condition + " = " +
-                            textField_DraftSelectQueryField.getText() +" AND XW_FLA = 0;";
+                    sql23 = "select * from xwcl\n" + "WHERE " + condition + " = " +
+                            textField_DraftSelectQueryField.getText() +" AND XW_FLAG = 0;";// 或者这里用收件人为空？也能实现！
                 }
                 else {
-                    sql23 = "select * from xw\n" + "WHERE " + condition + " = \'" +
-                            textField_DraftSelectQueryField.getText() +"\' AND XW_FLA = 0;";
+                    sql23 = "select * from xwcl\n" + "WHERE " + condition + " = \'" +
+                            textField_DraftSelectQueryField.getText() +"\' AND XW_FLAG = 0;";
                 }
                 rs = db.queryDatabase(sql23);
 
@@ -903,10 +1064,51 @@ public class login extends Application {
             rs = null;
 
             //查询所有
-            String sql22 = "select * from xw\n"+"WHERE XW_FLA = 0;";
+            String sql22 = "select * from xwcl\n"+"WHERE XW_FLAG = 0;";
             rs = db.queryDatabase(sql22);
             //根据查询结果建立表格
             BuildTable(tableView_DraftData,rs);
+            db.disconnect();
+        });
+
+        //按钮btn_DeleteQuery的动作
+        btn_DeleteQuery.setOnAction(event -> {
+            String condition = getString(stringBuffer_DeleteSelectQueryField);
+            if(condition.contentEquals("")){
+                BuildAlert(Alert.AlertType.ERROR,"错误",null,"请选择查询条件");
+            }
+            else{
+                db.connect();
+                rs = null;
+                //条件查询
+                String sql23;
+                if(condition.contentEquals("XW_ID")){
+                    sql23 = "select * from xwcl\n" + "WHERE " + condition + " = " +
+                            textField_DeleteSelectQueryField.getText() +" AND XW_RECEIVER = \'" +
+                            currentUser + "\' AND XW_FLAG = 2;";                }
+                else {
+                    sql23 = "select * from xwcl\n" + "WHERE " + condition + " = \'" +
+                            textField_DeleteSelectQueryField.getText() +"\' AND XW_RECEIVER = \'" +
+                            currentUser + "\' AND XW_FLAG = 2;";
+                }
+                rs = db.queryDatabase(sql23);
+
+                //根据查询结果建立表格
+                BuildTable(tableView_DeleteData,rs);
+
+                db.disconnect();
+            }
+        });
+
+        //按钮btn_DeleteQueryAll的动作
+        btn_DeleteQueryAll.setOnAction(event -> {
+            db.connect();
+            rs = null;
+            //查询所有
+            String sql2 = "select * from xwcl WHERE XW_RECEIVER = \'" + currentUser +"\' AND XW_FLAG = 2;";
+            rs = db.queryDatabase(sql2);
+            //根据查询结果建立表格
+            BuildTable(tableView_DeleteData,rs);
             db.disconnect();
         });
 
@@ -923,34 +1125,36 @@ public class login extends Application {
         btn_Send.setOnAction(event -> {
             db.connect();
 
-            //向表xw中插入数据
-            String sql_xw = "insert into xw values(";
-            sql_xw = sql_xw + GetSpareId("xw") + ",'";  //用方法GetSpareId查询自动变化的灵性ID
-            sql_xw = sql_xw + textField_xwTitle.getText() + "','";
-            sql_xw = sql_xw + textField_xwAuthor.getText() + "','";
-            sql_xw = sql_xw + textArea_xwMain.getText() + "','";
-            sql_xw = sql_xw + GetTime() + "',";
-            sql_xw = sql_xw + 1 + ");";     //发送成功的flag为1
-            System.out.println(sql_xw);
-            try {
-                if (stringBuffer_SelectedRecipients.toString().contentEquals("")) {
-                    BuildAlert(Alert.AlertType.ERROR,"错误",null,"请至少选择一位收件人");
-                }
-                else if(db.updateDatabases(sql_xw) < 1){
-                    System.out.println("出错了,详情见提示框");
-                }
-                else{
-                    System.out.println("收件人为："+stringBuffer_SelectedRecipients);
-                    BuildAlert(Alert.AlertType.INFORMATION,"发送成功",null,
-                            "已向"+stringBuffer_SelectedRecipients+"发送消息！");
-                }
-            }
-            catch(Exception e){
-                 e.printStackTrace();
-            }
+            //xw表废了没用，只向xwcl表插入数据
+//            //向表xw中插入数据
+//            String sql_xw = "insert into xw values(";
+//            sql_xw = sql_xw + GetSpareId("xw") + ",'";  //用方法GetSpareId查询自动变化的灵性ID
+//            sql_xw = sql_xw + textField_xwTitle.getText() + "','";
+//            sql_xw = sql_xw + textField_xwAuthor.getText() + "','";
+//            sql_xw = sql_xw + textArea_xwMain.getText() + "','";
+//            sql_xw = sql_xw + GetTime() + "',";
+//            sql_xw = sql_xw + 1 + ");";     //发送成功的flag为1
+//            System.out.println(sql_xw);
+//            try {
+//                if (stringBuffer_SelectedRecipients.toString().contentEquals("")) {
+//                    BuildAlert(Alert.AlertType.ERROR,"错误",null,"请至少选择一位收件人");
+//                }
+//                else if(db.updateDatabases(sql_xw) < 1){
+//                    System.out.println("出错了,详情见提示框");
+//                }
+//                else{
+//                    System.out.println("收件人为："+stringBuffer_SelectedRecipients);
+//                    BuildAlert(Alert.AlertType.INFORMATION,"发送成功",null,
+//                            "已向"+stringBuffer_SelectedRecipients+"发送消息！");
+//                }
+//            }
+//            catch(Exception e){
+//                 e.printStackTrace();
+//            }
 
             //向表xwcl插入数据
             String[] strings_receivers = stringBuffer_SelectedRecipients.toString().split("\\s+");
+            int flag = 0;
             for (String strings_receiver : strings_receivers) {
                 String sql_xwcl = "insert into xwcl values(";
                 sql_xwcl = sql_xwcl + GetSpareId("xwcl") + ",'";
@@ -959,47 +1163,52 @@ public class login extends Application {
                 sql_xwcl = sql_xwcl + strings_receiver + "','";
                 sql_xwcl = sql_xwcl + textArea_xwMain.getText() + "','";
                 sql_xwcl = sql_xwcl + GetTime() + "','',";         //XW_REMARK意见暂时为空
+                sql_xwcl = sql_xwcl + 1 + ",";                     //XW_FLAG发送成功为1
                 sql_xwcl = sql_xwcl + 0 + ");";                    //XW_READED默认为0，未读
                 System.out.println(sql_xwcl);
                 try {
-                    if (db.updateDatabases(sql_xwcl) < 1) {
-                        System.out.println("向xwcl表插入数据失败");
-                    } else {
-                        System.out.println("成功向xwcl表插入数据");
+                    if (stringBuffer_SelectedRecipients.toString().contentEquals("")) {
+                        BuildAlert(Alert.AlertType.ERROR,"错误",null,"请至少选择一位收件人");
+                    }
+                    else if(db.updateDatabases(sql_xwcl) < 1){
+                        System.out.println("出错了,详情见提示框");
+                    }
+                    else{
+                        flag = 1;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            if(flag == 1){
+                System.out.println("收件人为："+stringBuffer_SelectedRecipients);
+                BuildAlert(Alert.AlertType.INFORMATION,"发送成功",null,
+                        "已向"+stringBuffer_SelectedRecipients+"发送消息！");
+            }
+
             db.disconnect();
         });
 
-        //按钮btn_Save的动作
-        btn_Save.setOnAction(event -> {
-            db.connect();
-
-            //向表xw中插入数据
-            String sql2 = "insert into xw values(";
-            sql2 = sql2 + GetSpareId("xw") + ",'";  //用方法GetSpareId查询自动变化的灵性ID
-            sql2 = sql2 + textField_xwTitle.getText() + "','";
-            sql2 = sql2 + textField_xwAuthor.getText() + "','";
-            sql2 = sql2 + textArea_xwMain.getText() + "','";
-            sql2 = sql2 + GetTime() + "',";
-            sql2 = sql2 + 0 + ");";     //另存为的flag为0
-            try {
-                if(db.updateDatabases(sql2)<1){
-                    System.out.println("出错了，详情见提示框");
-                }
-                else{
-                    System.out.println("已保存！");
-                    BuildAlert(Alert.AlertType.INFORMATION,"保存成功",null,"已保存！");
-                }
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-            db.disconnect();
+        //按钮btn_Delete的动作
+        btn_Delete.setOnAction(event -> {
+            //切换顶部标签
+            label_Top.setText("Rubbishes");
+            //切换场景
+            border_Main.setCenter(grid_CenterDelete);
+            border_Main.setRight(null);
         });
+
+        //按钮btn_Draft的动作
+        btn_Draft.setOnAction(event -> {
+            //切换顶部标签
+            label_Top.setText("Drafts.");
+            //切换场景
+            border_Main.setRight(null);
+            border_Main.setCenter(grid_CenterDraft);
+        });
+
+
+
 
         //菜单栏的动作
         fileExit.setOnAction(actionEvent -> Platform.exit());           //exit退出
@@ -1007,6 +1216,33 @@ public class login extends Application {
         accountLogout.setOnAction(event -> primary_Stage.setScene(setScene_sceneLogin(primary_Stage)));
         return scene_Main;
     }
+
+    //switch获取String选择结果
+    private String getString(StringBuffer stringBuffer_SelectQueryField) {
+        String condition;
+        switch (stringBuffer_SelectQueryField.toString()){
+            case "编号":{
+                condition = "XW_ID";break;
+            }
+            case "标题":{
+                condition = "XW_NAME";break;
+            }
+            case "作者":{
+                condition = "XW_AUTHOR";break;
+            }
+            case "正文":{
+                condition = "XW_CONTEXT";break;
+            }
+            case "日期":{
+                condition = "XW_DATE";break;
+            }
+            default:{
+                condition = "";
+            }
+        }
+        return condition;
+    }
+
 
     //获取数据的类
     public static class Data {
